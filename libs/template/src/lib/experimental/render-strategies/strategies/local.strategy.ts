@@ -1,16 +1,21 @@
-import { coalesceAndSchedule } from '../../../render-strategies/static';
-import {
-  SchedulingPriority,
-  priorityTickMap
-} from '../../../render-strategies/rxjs/scheduling';
+import { ɵdetectChanges as detectChanges } from '@angular/core';
 import { map, switchMap, tap } from 'rxjs/operators';
 import {
+  GlobalTaskPriority,
   RenderStrategy,
   RenderStrategyFactoryConfig
 } from '../../../core/render-aware';
 import { coalesceWith } from '../../../render-strategies/rxjs/operators';
-import { ɵdetectChanges as detectChanges } from '@angular/core';
-import { promiseTick } from '../../../render-strategies/rxjs/scheduling';
+import {
+  priorityTickMap,
+  promiseTick,
+  SchedulingPriority,
+  scheduleOnGlobalTick
+} from '../../../render-strategies/rxjs/scheduling';
+import {
+  coalesceAndSchedule,
+  coalesceAndScheduleGlobal
+} from '../../../render-strategies/static';
 
 const promiseDurationSelector = promiseTick();
 
@@ -25,14 +30,16 @@ const promiseDurationSelector = promiseTick();
  * - bg - `background`
  * - iC - `idleCallback`
  *
- * | Name                       | ZoneLess | Render Method | ScopedCoalescing | Scheduling | Chunked |
- * |--------------------------- | ---------| --------------| ---------------- | ---------- |-------- |
- * | `localCoalesce`            | ✔        | ɵDC           | C + Pr          | ❌          | ❌       |
- * | `localCoalesceAndSchedule` | ✔        | ɵDC           | C + Pr          | aF         | ❌       |
- * | `ɵuserVisible`              | ✔        | ɵDC           | C + Pr          | uV         | ❌       |
- * | `ɵuserBlocking`             | ✔        | ɵDC           | C + Pr          | uB         | ❌       |
- * | `ɵbackground`               | ✔        | ɵDC           | C + Pr          | bg         | ❌       |
- * | `idleCallback`             | ✔        | ɵDC           | C + Pr          | iC         | ❌       |
+ * | Name                       | ZoneLess | Render Method | ScopedCoalescing | Scheduling | Chunked + Queued |
+ * |--------------------------- | ---------| --------------| ---------------- | ---------- |----------------- |
+ * | `localCoalesce`            | ✔        | ɵDC           | C + Pr          | ❌          | ❌                 |
+ * | `localCoalesceAndSchedule` | ✔        | ɵDC           | C + Pr          | aF         | ❌                 |
+ * | `chunk`                    | ✔        | ɵDC           | C + Pr          | aF         | ✔ + blocking      |
+ * | `blocking`                 | ✔        | ɵDC           | C + Pr          | aF         | ❌ + chunk         |
+ * | `ɵuserVisible`              | ✔        | ɵDC           | C + Pr          | uV         | ❌                |
+ * | `ɵuserBlocking`             | ✔        | ɵDC           | C + Pr          | uB         | ❌                |
+ * | `ɵbackground`               | ✔        | ɵDC           | C + Pr          | bg         | ❌                |
+ * | `idleCallback`             | ✔        | ɵDC           | C + Pr          | iC         | ❌                 |
  *
  */
 
@@ -45,7 +52,196 @@ export function getExperimentalLocalStrategies(
     userVisible: createUserVisibleStrategy(config),
     userBlocking: createUserBlockingStrategy(config),
     background: createBackgroundStrategy(config),
-    idleCallback: createIdleCallbackStrategy(config)
+    idleCallback: createIdleCallbackStrategy(config),
+    chunk: createChunkStrategy(config),
+    chunkFirst: createChunkFirstStrategy(config),
+    blocking: createBlockingStrategy(config),
+    detachChunk: createDetachChunkStrategy(config),
+    detachChunkFirst: createDetachChunkFirstStrategy(config),
+    detachBlocking: createDetachBlockingStrategy(config)
+  };
+}
+
+export function createBlockingStrategy<T>(
+  config: RenderStrategyFactoryConfig
+): RenderStrategy {
+  const scope = (config.cdRef as any).context;
+  const taskPriority = GlobalTaskPriority.blocking;
+
+  const renderMethod = () => {
+    config.cdRef.detectChanges();
+  };
+  const behavior = o =>
+    o.pipe(
+      coalesceWith(promiseDurationSelector, scope),
+      scheduleOnGlobalTick(() => ({
+        priority: taskPriority,
+        work: renderMethod
+      }))
+    );
+
+  const scheduleCD = () =>
+    coalesceAndScheduleGlobal(renderMethod, taskPriority, scope);
+
+  return {
+    name: 'blocking',
+    detectChanges: renderMethod,
+    rxScheduleCD: behavior,
+    scheduleCD
+  };
+}
+
+export function createChunkStrategy<T>(
+  config: RenderStrategyFactoryConfig
+): RenderStrategy {
+  const scope = (config.cdRef as any).context;
+  const taskPriority = GlobalTaskPriority.chunk;
+  const component = (config.cdRef as any).context;
+
+  const renderMethod = () => {
+    detectChanges(component);
+  };
+  const behavior = o =>
+    o.pipe(
+      coalesceWith(promiseDurationSelector, component),
+      scheduleOnGlobalTick(() => ({
+        priority: taskPriority,
+        work: renderMethod
+      }))
+    );
+
+  const scheduleCD = () =>
+    coalesceAndScheduleGlobal(renderMethod, taskPriority, scope);
+
+  return {
+    name: 'chunk',
+    detectChanges: renderMethod,
+    rxScheduleCD: behavior,
+    scheduleCD
+  };
+}
+
+export function createChunkFirstStrategy<T>(
+  config: RenderStrategyFactoryConfig
+): RenderStrategy {
+  const scope = (config.cdRef as any).context;
+  const component = (config.cdRef as any).context;
+  let taskPriority = GlobalTaskPriority.chunk;
+  const renderMethod = () => {
+    config.cdRef.detectChanges();
+  };
+  const behavior = o =>
+    o.pipe(
+      coalesceWith(promiseDurationSelector, component),
+      scheduleOnGlobalTick(() => ({
+        priority: taskPriority,
+        work: renderMethod
+      })),
+      tap(() => (taskPriority = GlobalTaskPriority.blocking))
+    );
+
+  const scheduleCD = () =>
+    coalesceAndScheduleGlobal(renderMethod, taskPriority, scope);
+
+  return {
+    name: 'chunkFirst',
+    detectChanges: renderMethod,
+    rxScheduleCD: behavior,
+    scheduleCD
+  };
+}
+
+export function createDetachChunkStrategy<T>(
+  config: RenderStrategyFactoryConfig
+): RenderStrategy {
+  const scope = (config.cdRef as any).context;
+  const component = (config.cdRef as any).context;
+  const taskPriority = GlobalTaskPriority.chunk;
+  const renderMethod = () => {
+    config.cdRef.reattach();
+    config.cdRef.detectChanges();
+    config.cdRef.detach();
+  };
+  const behavior = o =>
+    o.pipe(
+      coalesceWith(promiseDurationSelector, component),
+      scheduleOnGlobalTick(() => ({
+        priority: taskPriority,
+        work: renderMethod
+      }))
+    );
+
+  const scheduleCD = () =>
+    coalesceAndScheduleGlobal(renderMethod, taskPriority, scope);
+
+  return {
+    name: 'detachChunk',
+    detectChanges: renderMethod,
+    rxScheduleCD: behavior,
+    scheduleCD
+  };
+}
+
+export function createDetachChunkFirstStrategy<T>(
+  config: RenderStrategyFactoryConfig
+): RenderStrategy {
+  const scope = (config.cdRef as any).context;
+  const component = (config.cdRef as any).context;
+  let taskPriority = GlobalTaskPriority.chunk;
+  const renderMethod = () => {
+    config.cdRef.reattach();
+    config.cdRef.detectChanges();
+    config.cdRef.detach();
+  };
+  const behavior = o =>
+    o.pipe(
+      coalesceWith(promiseDurationSelector, component),
+      scheduleOnGlobalTick(() => ({
+        priority: taskPriority,
+        work: renderMethod
+      })),
+      tap(() => (taskPriority = GlobalTaskPriority.blocking))
+    );
+
+  const scheduleCD = () =>
+    coalesceAndScheduleGlobal(renderMethod, taskPriority, scope);
+
+  return {
+    name: 'detachChunkFirst',
+    detectChanges: renderMethod,
+    rxScheduleCD: behavior,
+    scheduleCD
+  };
+}
+
+export function createDetachBlockingStrategy<T>(
+  config: RenderStrategyFactoryConfig
+): RenderStrategy {
+  const scope = (config.cdRef as any).context;
+  const component = (config.cdRef as any).context;
+  const taskPriority = GlobalTaskPriority.blocking;
+  const renderMethod = () => {
+    config.cdRef.reattach();
+    config.cdRef.detectChanges();
+    config.cdRef.detach();
+  };
+  const behavior = o =>
+    o.pipe(
+      coalesceWith(promiseDurationSelector, component),
+      scheduleOnGlobalTick(() => ({
+        priority: taskPriority,
+        work: renderMethod
+      }))
+    );
+
+  const scheduleCD = () =>
+    coalesceAndScheduleGlobal(renderMethod, taskPriority, scope);
+
+  return {
+    name: 'detachBlocking',
+    detectChanges: renderMethod,
+    rxScheduleCD: behavior,
+    scheduleCD
   };
 }
 
