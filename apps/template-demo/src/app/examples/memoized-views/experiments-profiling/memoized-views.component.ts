@@ -17,6 +17,7 @@ import { map, mapTo } from 'rxjs/operators';
     <button unpatch (click)="next.next()">Next</button>
     <button unpatch (click)="error.next()">Error</button>
     <button unpatch (click)="complete.next()">Complete</button>
+    <rx-angular-num-render></rx-angular-num-render>
     <br />
 
     {{ value$ | push: 'local' | json }}

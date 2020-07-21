@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { SharedModule } from '../shared/shared.module';
 
 import { MemoizedViewsComponent } from './experiments-profiling/memoized-views.component';
 import { TemplateModule } from '@rx-angular/template';
@@ -27,7 +28,8 @@ const DECLARATIONS = [MemoizedViewsComponent];
     RouterModule.forChild(ROUTES),
     TemplateModule,
     NgxSkeletonLoaderModule,
-    MatIconModule
+    MatIconModule,
+    SharedModule
   ],
   exports: [DECLARATIONS]
 })
