@@ -40,5 +40,12 @@ export const ROUTES: Routes = [
       import('./examples/component-tree-prio/component-tree-prio.module').then(
         m => m.ComponentTreePrioModule
       )
+  },
+  {
+    path: 'lazy-templates',
+    loadChildren: () =>
+      import('./examples/memoized-views/memoized-views.module').then(
+        m => m.MemoizedViewsModule
+      )
   }
 ];

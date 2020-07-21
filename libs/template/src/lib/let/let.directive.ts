@@ -28,9 +28,9 @@ export interface LetViewContext<T> {
   // to enable `as` syntax we have to assign the directives selector (var as v)
   rxLet: T;
   // set context var complete to true (var$; let e = $error)
-  $error: boolean;
+  error: boolean;
   // set context var complete to true (var$; let c = $complete)
-  $complete: boolean;
+  complete: boolean;
 }
 
 /**
@@ -115,6 +115,7 @@ export class LetDirective<U> implements OnInit, OnDestroy {
   @Input()
   set rxLet(potentialObservable: ObservableInput<U> | null | undefined) {
     this.renderAware.nextPotentialObservable(potentialObservable);
+    this.templateManager.insertEmbeddedView('rxSuspense');
   }
   @Input('rxLetStrategy')
   set strategy(strategy: string | Observable<string> | undefined) {
@@ -149,8 +150,8 @@ export class LetDirective<U> implements OnInit, OnDestroy {
       this.templateManager.updateViewContext({
         $implicit: undefined,
         rxLet: undefined,
-        $error: false,
-        $complete: false
+        error: false,
+        complete: false
       });
     }
   };
@@ -167,7 +168,7 @@ export class LetDirective<U> implements OnInit, OnDestroy {
       this.templateManager.insertEmbeddedView('rxNext');
       this.templateManager.insertEmbeddedView('rxError');
       this.templateManager.updateViewContext({
-        $error: true
+        error: true
       });
     },
     complete: () => {
@@ -175,7 +176,7 @@ export class LetDirective<U> implements OnInit, OnDestroy {
       this.templateManager.insertEmbeddedView('rxNext');
       this.templateManager.insertEmbeddedView('rxComplete');
       this.templateManager.updateViewContext({
-        $complete: true
+        complete: true
       });
     }
   };
@@ -196,8 +197,8 @@ export class LetDirective<U> implements OnInit, OnDestroy {
     this.templateManager = new TemplateManager(this.viewContainerRef, {
       $implicit: undefined,
       rxLet: undefined,
-      $error: false,
-      $complete: false
+      error: false,
+      complete: false
     });
 
     this.renderAware = createRenderAware({
