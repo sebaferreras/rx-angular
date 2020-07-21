@@ -15,9 +15,12 @@ import { HeroDetailComponent } from './hero-detail/hero-detail.component';
 import { HeroesComponent } from './heroes/heroes.component';
 import { HeroSearchComponent } from './hero-search/hero-search.component';
 import { MessagesComponent } from './messages/messages.component';
+import { NumRenderComponent } from './num-render/num-render.component';
+import { MatRippleModule } from '@angular/material/core';
 
 @NgModule({
   imports: [
+    MatRippleModule,
     BrowserModule,
     FormsModule,
     AppRoutingModule,
@@ -33,6 +36,7 @@ import { MessagesComponent } from './messages/messages.component';
     PushModule
   ],
   declarations: [
+    NumRenderComponent,
     AppComponent,
     DashboardComponent,
     HeroesComponent,
