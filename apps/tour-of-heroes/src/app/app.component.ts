@@ -6,6 +6,7 @@ import {
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AppRenderStrategy, ConfigService } from './config.service';
+import { getStrategies } from '@rx-angular/template';
 
 @Component({
   // tslint:disable-next-line:component-selector
@@ -17,12 +18,14 @@ import { AppRenderStrategy, ConfigService } from './config.service';
 export class AppComponent {
   title = 'Tour of Heroes';
 
+  strategies = Object.keys(getStrategies({ cdRef: { context: {} } } as any));
+
   constructor(
     private router: Router,
     private appRef: ApplicationRef,
-    private configService: ConfigService
+    public configService: ConfigService
   ) {
-    configService.setStrategy(AppRenderStrategy.local);
+    configService.setStrategy(AppRenderStrategy.native);
     router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe(() => appRef.tick());

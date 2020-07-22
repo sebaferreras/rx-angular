@@ -168,7 +168,10 @@ export class LetDirective<U> implements OnInit, OnDestroy {
       this.templateManager.insertEmbeddedView('rxNext');
       this.templateManager.insertEmbeddedView('rxError');
       this.templateManager.updateViewContext({
-        error: true
+        $implicit: undefined,
+        rxLet: undefined,
+        error: true,
+        complete: false
       });
     },
     complete: () => {
