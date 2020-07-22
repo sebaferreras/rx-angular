@@ -14,6 +14,7 @@ import { Renderable } from '../interfaces';
 @Component({
   selector: 'rx-angular-child',
   template: `
+    <renders class="renders"></renders>
     <table>
       <tr *ngFor="let item of items">
         <td>{{ item }}</td>
@@ -23,6 +24,7 @@ import { Renderable } from '../interfaces';
   styles: [
     `
       :host {
+        position: relative;
         width: 150px;
         height: 150px;
         border: 1px red solid;
@@ -31,20 +33,30 @@ import { Renderable } from '../interfaces';
         align-items: center;
         overflow: scroll;
       }
+      .renders {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
     `
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChildComponent extends RxState<Renderable<ChildComponent>>
   implements OnInit, OnDestroy {
-  renderings = 0;
+  numItems = 10;
 
   destroyed = new Subject();
 
   doRenderChunked = new Subject<string>();
   doRenderBlocking = new Subject<string>();
 
-  items = Array.from(Array(100).keys()).map(() => Math.random());
+  items = Array.from(Array(this.numItems).keys()).map(() => Math.random());
 
   private strategies;
 
@@ -85,11 +97,9 @@ export class ChildComponent extends RxState<Renderable<ChildComponent>>
     this.strategies[strategyName].scheduleCD();
   }
 
-  render() {
-    return this.renderings++;
-  }
-
   private updateItems(): void {
-    this.items = Array.from(Array(100).keys()).map(() => Math.random());
+    this.items = Array.from(Array(this.numItems).keys()).map(() =>
+      Math.random()
+    );
   }
 }

@@ -7,14 +7,12 @@ import {
   ViewChildren
 } from '@angular/core';
 import { RxState } from '@rx-angular/state';
-import {
-  getExperimentalLocalStrategies,
-  getStrategies
-} from '@rx-angular/template';
+
 import { Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Renderable } from '../interfaces';
 import { ChildComponent } from './child.component';
+import { getExperimentalLocalStrategies } from '@rx-angular/template';
 
 @Component({
   selector: 'rx-angular-render-queue',
@@ -24,18 +22,21 @@ import { ChildComponent } from './child.component';
 export class RenderQueueComponent
   extends RxState<Renderable<RenderQueueComponent>>
   implements OnInit, AfterViewInit {
-  /*@ViewChild(ChildComponent, { read: ComponentRef}) child1Ref: ComponentRef<ChildComponent>;
+  /*
+   @ViewChild(ChildComponent, { read: ComponentRef}) child1Ref: ComponentRef<ChildComponent>;
    @ViewChild(ChildComponent) child1: ChildComponent;
    @ViewChild(Child2Component, { read: ComponentRef}) child2Ref: ComponentRef<Child2Component>;
-   @ViewChild(Child2Component) child2: Child2Component;*/
+   @ViewChild(Child2Component) child2: Child2Component;
+   */
 
   @ViewChildren(ChildComponent) childComponents: QueryList<ChildComponent>;
 
   toggle = true;
+  numChildren = 100;
 
   doRender = new Subject();
 
-  items = Array.from(Array(100).keys());
+  items = Array.from(Array(this.numChildren).keys());
 
   constructor(private cdRef: ChangeDetectorRef) {
     super();
@@ -48,7 +49,7 @@ export class RenderQueueComponent
       this.doRender.pipe(
         tap(
           () =>
-            (this.items = Array.from(Array(100).keys()).map(() =>
+            (this.items = Array.from(Array(this.numChildren).keys()).map(() =>
               Math.random()
             ))
         ),

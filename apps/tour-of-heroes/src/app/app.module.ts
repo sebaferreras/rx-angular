@@ -44,6 +44,7 @@ import { MatRippleModule } from '@angular/material/core';
     MessagesComponent,
     HeroSearchComponent
   ],
+  exports: [NumRenderComponent],
   bootstrap: [AppComponent]
 })
 export class AppModule {}

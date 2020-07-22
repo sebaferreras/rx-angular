@@ -17,7 +17,7 @@ export function scheduleOnGlobalTick<T>(
       }
     };
   });
-  return (o$: Observable<T>) => {
+  return (o$: Observable<T>): Observable<T> => {
     // To clarify
 
     // If we could switchMap into the next schedule call

@@ -18,21 +18,32 @@ import { getStrategies } from '@rx-angular/template';
     <button [unpatch] (click)="toggleAutoIncrement.next('')">
       auto
     </button>
-    <label>VisibleStrategy</label>
-    <select (change)="visibleStrategy = $event?.target?.value">
-      <option [value]="s" *ngFor="let s of strategies">{{ s }}</option>
+    <label>VisibleStrategy {{ visibleStrategy$ | push }}</label>
+    <select (change)="visibleStrategy$.next($event?.target?.value)">
+      <option
+        [selected]="(visibleStrategy$ | push) === s"
+        [value]="s"
+        *ngFor="let s of strategies"
+        >{{ s }}</option
+      >
     </select>
-    <label>InVisibleStrategy</label>
-    <select (change)="invisibleStrategy = $event?.target?.value">
-      <option [value]="s" *ngFor="let s of strategies">{{ s }}</option>
+
+    <label>InVisibleStrategy {{ invisibleStrategy$ | push }}</label>
+    <select (change)="invisibleStrategy$.next($event?.target?.value)">
+      <option
+        [selected]="(invisibleStrategy$ | push) === s"
+        [value]="s"
+        *ngFor="let s of strategies"
+        >{{ s }}</option
+      >
     </select>
     <br />
     <b>viewPort</b>
     <div #viewPort class="view-port">
       <div
         class="target"
-        [viewport-prio]="invisibleStrategy"
-        *rxLet="count$; let count; strategy: visibleStrategy"
+        [viewport-prio]="invisibleStrategy$"
+        *rxLet="count$; let count; strategy: visibleStrategy$"
       >
         <b>target</b> <br />
         value: {{ count }}
@@ -69,8 +80,8 @@ export class Let1ContainerComponent {
 
   strategies = Object.keys(getStrategies({ cdRef: this.cdRef }));
 
-  visibleStrategy = 'local';
-  invisibleStrategy: string;
+  visibleStrategy$ = new BehaviorSubject('local');
+  invisibleStrategy$ = new BehaviorSubject('noop');
 
   count$ = merge(
     this.incrementTrigger,

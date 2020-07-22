@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Let1ContainerComponent } from './solution/let1.container.component';
 import { TemplateModule, ViewportPrioModule } from '@rx-angular/template';
+import { SharedModule } from '../shared/shared.module';
 
 export const ROUTES = [
   {
@@ -23,7 +24,8 @@ const DECLARATIONS = [Let1ContainerComponent];
     CommonModule,
     ViewportPrioModule,
     RouterModule.forChild(ROUTES),
-    TemplateModule
+    TemplateModule,
+    SharedModule
   ],
   exports: [DECLARATIONS]
 })

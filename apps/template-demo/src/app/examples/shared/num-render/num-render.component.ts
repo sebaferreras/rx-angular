@@ -2,7 +2,8 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatRipple } from '@angular/material/core';
 
 @Component({
-  selector: 'rx-angular-num-render',
+  // tslint:disable-next-line:component-selector
+  selector: 'renders',
   templateUrl: './num-render.component.html',
   styleUrls: ['./num-render.component.scss']
 })

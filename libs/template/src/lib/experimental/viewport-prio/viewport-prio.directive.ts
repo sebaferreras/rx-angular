@@ -1,6 +1,6 @@
 import { Directive, ElementRef, Input, OnInit, Optional } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
-import { filter, map, mergeAll, withLatestFrom } from 'rxjs/operators';
+import { BehaviorSubject, isObservable, Observable, of, Subject } from 'rxjs';
+import { map, mergeAll, take, tap, withLatestFrom } from 'rxjs/operators';
 import { getZoneUnPatchedApi } from '../../core';
 import { LetDirective } from '../../let';
 
@@ -79,10 +79,15 @@ export class ViewportPrioDirective implements OnInit {
     mergeAll()
   );
 
+  visiblePrio$ = this.letDirective.renderAware.activeStrategy$.pipe(take(1));
+  invisiblePrioSubject = new BehaviorSubject(of('noop'));
+  invisiblePrio$ = this.invisiblePrioSubject.pipe(mergeAll());
+
   _viewportPrio = 'noop';
   @Input('viewport-prio')
   set viewportPrio(prio) {
     if (prio) {
+      this.invisiblePrioSubject.next(isObservable(prio) ? prio : of(prio));
       this._viewportPrio = prio || 'noop';
     }
   }
@@ -109,28 +114,30 @@ export class ViewportPrioDirective implements OnInit {
   ) {}
 
   ngOnInit() {
-    const letStrategyName$ = this.letDirective.renderAware.activeStrategy$.pipe(
-      map(s => s.name),
-      filter(name => name !== this._viewportPrio)
+    const visiblePrio$ = this.letDirective.renderAware.activeStrategy$.pipe(
+      take(1),
+      tap(v => console.log('v', v))
     );
 
     this.observer.observe(this.el.nativeElement);
 
     this.visibilityEvents$
       .pipe(
-        withLatestFrom(letStrategyName$),
-        map(([visibility, strategyName]) =>
-          visibility === 'visible' ? strategyName : this._viewportPrio
+        tap(n => console.log('visibilityEvents: ', n)),
+        withLatestFrom(
+          visiblePrio$,
+          this.invisiblePrio$.pipe(map(s => this.letDirective.strategies[s]))
+        ),
+        map(([visibility, visiblePrio, invisiblePrio]) =>
+          visibility === 'visible' ? visiblePrio : invisiblePrio
         )
       )
-      .subscribe(strategyName => {
-        this.letDirective.strategy = strategyName;
-
+      .subscribe(strategy => {
+        this.letDirective.strategy = strategy.name;
+        console.log('name: ', strategy.name);
         // render actual state on viewport enter
-        this.letDirective.strategies[strategyName].scheduleCD();
-
-        //
-        this.el.nativeElement.classList.add(strategyName);
+        // strategy.scheduleCD();
+        // this.el.nativeElement.classList.add(strategyName);
       });
   }
 }

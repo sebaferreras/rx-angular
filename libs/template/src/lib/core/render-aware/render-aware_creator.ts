@@ -13,6 +13,8 @@ import {
   filter,
   finalize,
   map,
+  share,
+  shareReplay,
   switchMap,
   tap
 } from 'rxjs/operators';
@@ -79,6 +81,7 @@ export function createRenderAware<U>(cfg: {
       o$.pipe(
         distinctUntilChanged(),
         tap(cfg.updateObserver),
+        tap(() => console.log(currentStrategy.name)),
         currentStrategy.rxScheduleCD,
         finalize(() => currentStrategy.scheduleCD()),
         catchError(e => {
@@ -96,7 +99,7 @@ export function createRenderAware<U>(cfg: {
     nextStrategy(nextConfig: string | Observable<string>): void {
       strategyName$.next(nextConfig);
     },
-    activeStrategy$: strategy$,
+    activeStrategy$: strategy$.pipe(shareReplay(1)),
     subscribe(): Subscription {
       return new Subscription()
         .add(strategy$.subscribe())

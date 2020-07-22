@@ -6,6 +6,7 @@ import { UnpatchEventsModule } from '@rx-angular/template';
 import { Child2Component } from './render-queue/child2.component';
 import { RenderQueueComponent } from './render-queue/render-queue.component';
 import { ChildComponent } from './render-queue/child.component';
+import { SharedModule } from '../shared/shared.module';
 
 const ROUTES: Routes = [
   {
@@ -20,7 +21,8 @@ const ROUTES: Routes = [
     CommonModule,
     UnpatchEventsModule,
     RouterModule.forChild(ROUTES),
-    MatListModule
+    MatListModule,
+    SharedModule
   ]
 })
 export class RenderQueueModule {}
