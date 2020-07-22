@@ -1,6 +1,29 @@
-import { Directive, ElementRef, Input, OnInit, Optional } from '@angular/core';
-import { BehaviorSubject, isObservable, Observable, of, Subject } from 'rxjs';
-import { map, mergeAll, take, tap, withLatestFrom } from 'rxjs/operators';
+import {
+  Directive,
+  ElementRef,
+  Input,
+  OnDestroy,
+  OnInit,
+  Optional
+} from '@angular/core';
+import {
+  BehaviorSubject,
+  combineLatest,
+  isObservable,
+  Observable,
+  of,
+  Subject,
+  Subscription
+} from 'rxjs';
+import {
+  distinctUntilChanged,
+  distinctUntilKeyChanged,
+  filter,
+  map,
+  mergeAll,
+  take,
+  tap
+} from 'rxjs/operators';
 import { getZoneUnPatchedApi } from '../../core';
 import { LetDirective } from '../../let';
 
@@ -73,7 +96,7 @@ const observerSupported = () =>
   // tslint:disable-next-line:directive-selector
   selector: '[viewport-prio]'
 })
-export class ViewportPrioDirective implements OnInit {
+export class ViewportPrioDirective implements OnInit, OnDestroy {
   entriesSubject = new Subject<IntersectionObserverEntry[]>();
   entries$: Observable<IntersectionObserverEntry> = this.entriesSubject.pipe(
     mergeAll()
@@ -92,21 +115,28 @@ export class ViewportPrioDirective implements OnInit {
     }
   }
 
-  private observer: IntersectionObserver | null = observerSupported()
-    ? new IntersectionObserver(entries => this.entriesSubject.next(entries), {
-        threshold: 0
-      })
-    : null;
+  // tslint:disable-next-line:no-input-rename
+  @Input('viewport-prio-root') rootElement: HTMLElement | null;
+
+  private observer: IntersectionObserver | null;
 
   visibilityEvents$ = this.entries$.pipe(
+    // TODO: investigate more
+    // tap(console.log),
+    // TODO: IntersectionObserver has to be configured correctly, otherwise this will fire A LOT
+    filter(entry => !!entry.rootBounds),
     map(entry => {
       if (entry.intersectionRatio > 0) {
         return 'visible';
       } else {
         return 'invisible';
       }
-    })
+    }),
+    distinctUntilChanged()
   );
+
+  private eventSub = Subscription.EMPTY;
+  private prioChanged = false;
 
   constructor(
     private readonly el: ElementRef,
@@ -114,30 +144,49 @@ export class ViewportPrioDirective implements OnInit {
   ) {}
 
   ngOnInit() {
-    const visiblePrio$ = this.letDirective.renderAware.activeStrategy$.pipe(
-      take(1),
-      tap(v => console.log('v', v))
-    );
+    this.observer = observerSupported()
+      ? new IntersectionObserver(entries => this.entriesSubject.next(entries), {
+          threshold: 0,
+          root: this.rootElement
+        })
+      : null;
 
-    this.observer.observe(this.el.nativeElement);
+    if (this.observer) {
+      this.observer.observe(this.el.nativeElement);
 
-    this.visibilityEvents$
-      .pipe(
-        tap(n => console.log('visibilityEvents: ', n)),
-        withLatestFrom(
-          visiblePrio$,
-          this.invisiblePrio$.pipe(map(s => this.letDirective.strategies[s]))
+      this.eventSub = combineLatest([
+        this.visibilityEvents$.pipe(
+          tap(n => console.log('visibilityEvents: ', n))
         ),
-        map(([visibility, visiblePrio, invisiblePrio]) =>
-          visibility === 'visible' ? visiblePrio : invisiblePrio
+        this.letDirective.renderAware.activeStrategy$.pipe(
+          filter(() => !this.prioChanged),
+          tap(n => console.log('activeStrategy: ', n))
+        ),
+        this.invisiblePrio$.pipe(
+          tap(n => console.log('invisiblePrio: ', n)),
+          map(s => this.letDirective.strategies[s])
         )
-      )
-      .subscribe(strategy => {
-        this.letDirective.strategy = strategy.name;
-        console.log('name: ', strategy.name);
-        // render actual state on viewport enter
-        // strategy.scheduleCD();
-        // this.el.nativeElement.classList.add(strategyName);
-      });
+      ])
+        .pipe(
+          map(([visibility, visiblePrio, invisiblePrio]) =>
+            visibility === 'visible' ? visiblePrio : invisiblePrio
+          ),
+          distinctUntilKeyChanged('name')
+        )
+        .subscribe(strategy => {
+          // TODO: this is kind of hacky, but works
+          this.prioChanged = true;
+          this.letDirective.strategy = strategy.name;
+          this.prioChanged = false;
+          console.log('name: ', strategy.name);
+          // render actual state on viewport enter
+          // strategy.scheduleCD();
+          // this.el.nativeElement.classList.add(strategyName);
+        });
+    }
+  }
+
+  ngOnDestroy() {
+    this.eventSub.unsubscribe();
   }
 }

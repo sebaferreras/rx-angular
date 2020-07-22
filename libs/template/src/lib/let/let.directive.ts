@@ -16,11 +16,11 @@ import {
   Unsubscribable
 } from 'rxjs';
 import { createRenderAware, RenderAware, StrategySelection } from '../core';
+import { TemplateManager } from '../core/utils/template-manager';
 import {
   DEFAULT_STRATEGY_NAME,
   getStrategies
 } from '../render-strategies/strategies/strategies-map';
-import { TemplateManager } from '../core/utils/template-manager';
 
 export interface LetViewContext<T> {
   // to enable `let` syntax we have to use $implicit (var; let v = var)

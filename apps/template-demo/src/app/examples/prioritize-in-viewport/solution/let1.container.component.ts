@@ -11,7 +11,7 @@ import { getStrategies } from '@rx-angular/template';
   selector: 'let1-container',
   template: `
     <h1>Stop rendering if directive is out of the viewport</h1>
-    rerenders: {{ rerenders() }}<br />
+    rerenders: <renders></renders><br />
     <button [unpatch] (click)="incrementTrigger.next()">
       count up
     </button>
@@ -40,13 +40,16 @@ import { getStrategies } from '@rx-angular/template';
     <br />
     <b>viewPort</b>
     <div #viewPort class="view-port">
-      <div
-        class="target"
-        [viewport-prio]="invisibleStrategy$"
-        *rxLet="count$; let count; strategy: visibleStrategy$"
-      >
-        <b>target</b> <br />
-        value: {{ count }}
+      <div class="view-port-inner">
+        <div
+          class="target"
+          [viewport-prio]="invisibleStrategy$"
+          [viewport-prio-root]="viewPort"
+          *rxLet="count$; let count; strategy: visibleStrategy$ | push"
+        >
+          <b>target</b>
+          value: {{ count }}
+        </div>
       </div>
     </div>
   `,
@@ -59,9 +62,21 @@ import { getStrategies } from '@rx-angular/template';
         border: 1px solid red;
       }
 
+      .view-port-inner {
+        height: 1000px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
       .target {
-        margin: 300px 0;
-        padding: 20px;
+        height: 100px;
+        width: 100px;
+        border: 1px solid red;
+        display: flex;
+        flex-flow: column;
+        align-items: center;
+        justify-content: center;
       }
 
       .noop {

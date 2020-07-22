@@ -9,12 +9,14 @@ import {
 } from 'rxjs';
 import {
   catchError,
+  combineLatest,
   distinctUntilChanged,
   filter,
   finalize,
   map,
   share,
   shareReplay,
+  startWith,
   switchMap,
   tap
 } from 'rxjs/operators';
@@ -51,7 +53,8 @@ export function createRenderAware<U>(cfg: {
         : stringOrObservable
     ),
     nameToStrategy(cfg.strategies),
-    tap(s => (currentStrategy = s))
+    tap(s => (currentStrategy = s)),
+    shareReplay({ refCount: true, bufferSize: 1 })
   );
 
   const observablesFromTemplate$ = new ReplaySubject<Observable<U>>(1);
@@ -59,7 +62,7 @@ export function createRenderAware<U>(cfg: {
     distinctUntilChanged()
   );
   let firstTemplateObservableChange = true;
-
+  let abortController: AbortController;
   const renderingEffect$ = valuesFromTemplate$.pipe(
     // handle null | undefined assignment and new Observable reset
     map(observable$ => {
@@ -81,8 +84,10 @@ export function createRenderAware<U>(cfg: {
       o$.pipe(
         distinctUntilChanged(),
         tap(cfg.updateObserver),
-        tap(() => console.log(currentStrategy.name)),
-        currentStrategy.rxScheduleCD,
+        //        tap(() => console.log(currentStrategy.name)),
+        // TODO: when to abort?!
+        tap(() => (abortController = currentStrategy.scheduleCD())),
+        // TODO: don't we want to abort on finalize?!
         finalize(() => currentStrategy.scheduleCD()),
         catchError(e => {
           console.error(e);
@@ -99,7 +104,7 @@ export function createRenderAware<U>(cfg: {
     nextStrategy(nextConfig: string | Observable<string>): void {
       strategyName$.next(nextConfig);
     },
-    activeStrategy$: strategy$.pipe(shareReplay(1)),
+    activeStrategy$: strategy$,
     subscribe(): Subscription {
       return new Subscription()
         .add(strategy$.subscribe())
