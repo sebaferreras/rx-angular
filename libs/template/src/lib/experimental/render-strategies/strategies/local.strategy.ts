@@ -5,15 +5,13 @@ import {
   RenderStrategy,
   RenderStrategyFactoryConfig
 } from '../../../core/render-aware';
-import { coalesceWith } from '../../../render-strategies/rxjs/operators';
-import {
-  priorityTickMap,
-  promiseTick,
-  SchedulingPriority,
-  scheduleOnGlobalTick
-} from '../../../render-strategies/rxjs/scheduling';
+import { coalesceWith } from '../../../render-strategies/rxjs/operators/coalesceWith';
+import { promiseTick } from '../../../render-strategies/rxjs/scheduling/promiseTick';
 import { coalesceAndScheduleGlobal } from '../../../render-strategies/static/static-schedule-and-coalesce-global';
 import { coalesceAndSchedule } from '../../../render-strategies/static/static-schedule-and-coalesced';
+import { priorityTickMap } from '../../../render-strategies/rxjs/scheduling/priority-tick-map';
+import { SchedulingPriority } from '../../../render-strategies/rxjs/scheduling/interfaces';
+import { scheduleOnGlobalTick } from '../../../render-strategies/rxjs/scheduling/globalAnimationFrameTick';
 
 const promiseDurationSelector = promiseTick();
 

@@ -17,17 +17,22 @@ import { RxState } from '@rx-angular/state';
     <button unpatch (click)="complete.next()">Complete</button>
     <renders></renders>
     <br />
-    <ng-container
-      *rxLet="
-        value$;
-        let value;
+    <!--
+
+
+        <ng-container *rxLet="value$; let value;">
+
         let e = error;
         let c = complete;
-        suspense: suspenseView;
+
+     suspense: suspenseView;
         error: errorView;
         complete: completeView
-      "
-    >
+
+    -->
+
+    <!--   -->
+    <ng-container *ngIf="value$ | push as value">
       next: {{ value | json }}<br />
     </ng-container>
 
@@ -73,7 +78,7 @@ export class MemoizedViewsComponent {
     });
 
     this.s.hold(this.next, () => {
-      this.value$.next({ name: 42, age: Math.random() });
+      this.value$.next(Math.random() > 0.5);
     });
 
     this.s.hold(this.error, () => {

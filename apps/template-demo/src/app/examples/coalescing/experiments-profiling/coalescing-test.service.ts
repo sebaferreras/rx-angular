@@ -25,7 +25,7 @@ export class CoalescingTestService {
   nextValues = new Subject<any>();
   toggle = new Subject<any>();
   value$: Observable<string> = this.nextValues.pipe(
-    mergeMap(() => ['1', '2', '3', '4', Math.random() + ''])
+    mergeMap(() => ['1', '2', Math.random() + ''])
   );
   value;
 
