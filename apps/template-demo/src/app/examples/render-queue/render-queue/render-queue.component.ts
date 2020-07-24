@@ -32,7 +32,7 @@ export class RenderQueueComponent
   @ViewChildren(ChildComponent) childComponents: QueryList<ChildComponent>;
 
   toggle = true;
-  numChildren = 100;
+  numChildren = 10;
 
   doRender = new Subject();
 

@@ -1,14 +1,12 @@
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  Component,
-  OnInit
+  Component
 } from '@angular/core';
 
-import { concat, interval, NEVER, Observable, Subject, timer } from 'rxjs';
+import { Subject } from 'rxjs';
 import { getStrategies } from '@rx-angular/template';
 import { RxState } from '@rx-angular/state';
-import { map, mapTo } from 'rxjs/operators';
 
 @Component({
   selector: 'demo-basics',
@@ -19,9 +17,6 @@ import { map, mapTo } from 'rxjs/operators';
     <button unpatch (click)="complete.next()">Complete</button>
     <renders></renders>
     <br />
-
-    {{ value$ | push: 'local' | json }}
-
     <ng-container
       *rxLet="
         value$;
@@ -37,8 +32,16 @@ import { map, mapTo } from 'rxjs/operators';
     </ng-container>
 
     <ng-template #suspenseView>
-      <ngx-skeleton-loader></ngx-skeleton-loader>
-      <ngx-skeleton-loader></ngx-skeleton-loader>
+      <ngx-skeleton-loader
+        [count]="3"
+        [appearance]="'circle'"
+      ></ngx-skeleton-loader>
+      <ngx-skeleton-loader [count]="3"></ngx-skeleton-loader>
+      <ngx-skeleton-loader
+        [count]="3"
+        [appearance]="'circle'"
+      ></ngx-skeleton-loader>
+      <ngx-skeleton-loader [count]="3"></ngx-skeleton-loader>
     </ng-template>
 
     <ng-template #errorView>

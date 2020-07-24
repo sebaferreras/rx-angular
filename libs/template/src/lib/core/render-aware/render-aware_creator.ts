@@ -82,7 +82,6 @@ export function createRenderAware<U>(cfg: {
     filter(o$ => o$ !== undefined),
     switchMap(o$ =>
       o$.pipe(
-        tap(b => console.log('new Observable: ', b)),
         distinctUntilChanged(),
         tap(cfg.updateObserver),
         //        tap(() => console.log(currentStrategy.name)),

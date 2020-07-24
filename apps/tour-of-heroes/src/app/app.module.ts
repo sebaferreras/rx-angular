@@ -2,7 +2,12 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
-import { LetModule, PushModule } from '@rx-angular/template';
+import {
+  LetModule,
+  PushModule,
+  UnpatchEventsModule,
+  ViewportPrioModule
+} from '@rx-angular/template';
 
 import { HttpClientInMemoryWebApiModule } from 'angular-in-memory-web-api';
 import { InMemoryDataService } from './in-memory-data.service';
@@ -33,7 +38,9 @@ import { MatRippleModule } from '@angular/material/core';
       dataEncapsulation: false
     }),
     LetModule,
-    PushModule
+    PushModule,
+    UnpatchEventsModule,
+    ViewportPrioModule
   ],
   declarations: [
     NumRenderComponent,
