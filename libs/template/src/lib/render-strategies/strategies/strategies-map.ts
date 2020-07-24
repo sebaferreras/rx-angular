@@ -6,6 +6,7 @@ import { createNoopStrategy } from './noop.strategy';
 import { createNativeStrategy } from './native.strategy';
 import { getLocalStrategies } from './local.strategy';
 import { getGlobalStrategies } from './global.strategy';
+import { getExperimentalLocalStrategies } from '../../experimental/render-strategies/strategies';
 
 export const DEFAULT_STRATEGY_NAME = 'local';
 
@@ -16,7 +17,8 @@ export function getStrategies(
     noop: createNoopStrategy(),
     native: createNativeStrategy(config),
     ...getGlobalStrategies(config),
-    ...getLocalStrategies(config)
+    ...getLocalStrategies(config),
+    ...getExperimentalLocalStrategies(config)
   };
 }
 

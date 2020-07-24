@@ -54,6 +54,7 @@ export function createRenderAware<U>(cfg: {
     ),
     nameToStrategy(cfg.strategies),
     tap(s => (currentStrategy = s)),
+    tap(s => console.log(s.name)),
     shareReplay({ refCount: true, bufferSize: 1 })
   );
 

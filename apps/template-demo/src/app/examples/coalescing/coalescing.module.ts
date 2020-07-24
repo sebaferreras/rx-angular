@@ -16,6 +16,8 @@ import { CoalescingExperimentsProfilingComponent } from './experiments-profiling
 import { TemplateModule } from '@rx-angular/template';
 import { RealLife1ContainerComponent } from './real-life-1/real-life-1.container.component';
 import { RealLife1Component } from './real-life-1/real-life-1.component';
+import { SharedModule } from '../shared/shared.module';
+import { CoalescingExperimentsProfilingChildComponent } from './experiments-profiling/coalescing-experiments-profiling-child.component';
 
 export const ROUTES = [
   {
@@ -35,12 +37,18 @@ export const ROUTES = [
 const DECLARATIONS = [
   CoalescingExperimentsProfilingComponent,
   RealLife1ContainerComponent,
+  CoalescingExperimentsProfilingChildComponent,
   RealLife1Component
 ];
 
 @NgModule({
   declarations: [DECLARATIONS],
-  imports: [CommonModule, RouterModule.forChild(ROUTES), TemplateModule],
+  imports: [
+    CommonModule,
+    RouterModule.forChild(ROUTES),
+    TemplateModule,
+    SharedModule
+  ],
   exports: [DECLARATIONS]
 })
 export class CoalescingModule {}
