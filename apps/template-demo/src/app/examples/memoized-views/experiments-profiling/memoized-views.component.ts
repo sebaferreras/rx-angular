@@ -19,22 +19,24 @@ import { RxState } from '@rx-angular/state';
     <br />
     <!--
 
-
         <ng-container *rxLet="value$; let value;">
 
         let e = error;
         let c = complete;
 
-     suspense: suspenseView;
+ suspense: suspenseView;
         error: errorView;
         complete: completeView
 
     -->
 
-    <!--   -->
     <ng-container *ngIf="value$ | push as value">
       next: {{ value | json }}<br />
     </ng-container>
+
+    <!--
+
+    -->
 
     <ng-template #suspenseView>
       <ngx-skeleton-loader

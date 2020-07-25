@@ -9,14 +9,11 @@ import {
 } from 'rxjs';
 import {
   catchError,
-  combineLatest,
   distinctUntilChanged,
   filter,
   finalize,
   map,
-  share,
   shareReplay,
-  startWith,
   switchMap,
   tap
 } from 'rxjs/operators';
@@ -54,7 +51,6 @@ export function createRenderAware<U>(cfg: {
     ),
     nameToStrategy(cfg.strategies),
     tap(s => (currentStrategy = s)),
-    tap(s => console.log(s.name)),
     shareReplay({ refCount: true, bufferSize: 1 })
   );
 

@@ -1,7 +1,8 @@
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  Component
+  Component,
+  NgZone
 } from '@angular/core';
 import { BehaviorSubject, EMPTY, interval, merge, Subject } from 'rxjs';
 import { scan, startWith, switchMap } from 'rxjs/operators';
@@ -102,14 +103,14 @@ export class Let1ContainerComponent {
     this.incrementTrigger,
     this.toggleAutoIncrement.pipe(
       scan(v => !v, true),
-      switchMap(v => (v ? interval(0) : EMPTY))
+      switchMap(v => (v ? interval(200) : EMPTY))
     )
   ).pipe(
     startWith(1),
     scan(v => ++v, 0)
   );
 
-  constructor(private cdRef: ChangeDetectorRef) {}
+  constructor(private ngZone: NgZone, private cdRef: ChangeDetectorRef) {}
 
   numRenders = 0;
 
