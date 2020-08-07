@@ -1,3 +1,7 @@
+---
+filename: rx-state
+---
+
 # RxState
 
 RxState is a light-weight reactive state management service for managing local state in angular.

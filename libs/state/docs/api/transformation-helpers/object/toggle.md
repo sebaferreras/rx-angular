@@ -1,3 +1,7 @@
+---
+filename: toggle
+---
+
 # toggle
 
 Toggles a boolean property in the object.

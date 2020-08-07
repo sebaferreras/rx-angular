@@ -1,3 +1,7 @@
+---
+filename: patch
+---
+
 # patch
 
 Merges an object of type T with updates of type Partial<T>.

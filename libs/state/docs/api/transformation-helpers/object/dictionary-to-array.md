@@ -1,3 +1,7 @@
+---
+filename: dictionaryToArray
+---
+
 # dictionaryToArray
 
 Converts a dictionary of type {[key: string]: T} to array T[].

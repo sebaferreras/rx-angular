@@ -1,3 +1,7 @@
+---
+filename: remove
+---
+
 # remove
 
 Removes one or multiple items from an array T[].

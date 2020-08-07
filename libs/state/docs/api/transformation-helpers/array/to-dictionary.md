@@ -1,3 +1,7 @@
+---
+filename: toDictionary
+---
+
 # toDictionary
 
 Converts an array of objects to a dictionary {[key: string]: T}.

@@ -1,3 +1,7 @@
+---
+filename: deleteProp
+---
+
 # deleteProp
 
 Accepts an object of type T and key of type K extends keyof T.

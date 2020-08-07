@@ -1,3 +1,7 @@
+---
+filename: insert
+---
+
 # insert
 
 Inserts one or multiple items to an array T[].
